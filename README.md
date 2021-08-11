@@ -19,17 +19,21 @@
    ```
    http://localhost:5000/api/scanning/search
    ```
+   The other is to get results:
+   ```
+   http://localhost:5000/api/scanning/status/<task_id>
+   ```
    And only accept the params with the key `page`, for example:
    ```
    http://localhost:5000/api/scanning/search?page=1
    ```
-6. You can consult the json file with the results in the directory
+7. You can consult the json file with the results in the directory
    ```
    ../webscanner/app/api_uploaded_files
    ```
-7. To see what is happening inside the firefox container:
+8. To see what is happening inside the firefox container:
    ```
    access: http://localhost:7900
    password: secret
    ```
-8. To see the monitor http://localhost:8888
+9. To see the monitor http://localhost:8888
