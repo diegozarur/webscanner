@@ -10,9 +10,7 @@ def search():
 
     task_searching = Scanning()
     try:
-        # result = task_searching.run({'page': request.args.get('page', '')})
-        # return jsonify({'success': True, 'message': "It's everything ok!", 'data': result}), 200
-        result = task_searching.delay(request_data={'page': request.args.get('page', '')})
+        result = task_searching.delay(request_data={'page': request.args.get('page', 1)})
         return jsonify(
             {
                 'state': result.state,

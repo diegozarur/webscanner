@@ -27,3 +27,9 @@
    ```
    ../webscanner/app/api_uploaded_files
    ```
+7. To see what is happening inside the firefox container:
+   ```
+   access: http://localhost:7900
+   password: secret
+   ```
+8. To see the monitor http://localhost:8888
