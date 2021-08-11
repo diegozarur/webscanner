@@ -1,0 +1,91 @@
+version: '3'
+
+services:
+
+  redis:
+    container_name: webscanner-redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - default
+
+  firefox:
+    image: selenium/node-firefox:4.0.0-rc-1-prerelease-20210713
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+    ports:
+      - "7900:7900"
+    networks:
+      - default
+
+  selenium-hub:
+    image: selenium/hub:4.0.0-rc-1-prerelease-20210713
+    container_name: selenium-hub
+    environment:
+      GRID_MAX_SESSION: 16
+      GRID_BROWSER_TIMEOUT: 300
+      GRID_TIMEOUT: 300
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+    networks:
+      - default
+
+  api:
+    container_name: webscanner-api
+    hostname: webscanner-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/code
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SELENIUM_HOST=selenium-hub
+      - SELENIUM_PORT=4444
+    depends_on:
+      - redis
+    networks:
+      - default
+
+  worker:
+    container_name: webscanner-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: celery
+    command: -A run.celery worker --concurrency=3 -n worker1@%h --loglevel=info
+    volumes:
+      - ./:/code
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - api
+      - redis
+    networks:
+      - default
+
+  monitor:
+    container_name: webscanner-monitor
+    image: mher/flower
+    command: ["flower", "--broker=redis://redis:6379/0", "--port=8888","-address=0.0.0.0" ]
+    ports:
+      - 8888:8888
+    depends_on:
+      - worker
+      - redis
+    networks:
+      - default

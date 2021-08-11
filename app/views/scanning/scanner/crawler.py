@@ -1,0 +1,2 @@
+class ScannerCrawler:
+    pass
